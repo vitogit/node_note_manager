@@ -1,0 +1,25 @@
+{
+  "name": "node_note_manager",
+  "version": "1.0.0",
+  "description": "Note manager",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.14.0",
+    "mime": "~1.2.7"
+  },
+  "keywords": [
+    "node",
+    "javascript",
+    "personal",
+    "manager"
+  ],
+  "engines": {
+    "node": "6.4.x",
+    "npm": "3.10.x"
+  },
+  "author": "vitomd",
+  "license": "MIT"
+}

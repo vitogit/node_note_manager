@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <script data-require="jquery@*" data-semver="3.0.0" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0/jquery.js"></script>
+    <script src="//cdn.tinymce.com/4/tinymce.min.js"></script>
+  </head>
+
+  <body>
+     Filter bullets points dinamically    <br>
+    <input id="filter_box" type=text oninput="filter()"/>
+    <br><br>
+    <div class="allTags">
+      <a class="hashLink" onclick="filterClear()" href="#">Clear</a>
+      
+    </div>
+    <textarea id="editor"> 
+      <ul style="list-style-type: circle;"> 
+        <li>hello 
+          <ul> 
+            <li>how 
+              <ul> 
+                <li>are</li> 
+              </ul> 
+            </li> 
+            <li>you</li> 
+          </ul> 
+        </li> 
+        <li>my #friend</li> 
+      </ul>
+    </textarea>
+    <button onclick="parseHashtags()">Parse</button>
+  </body>
+
+  <script>
+    $( document ).ready(function() {
+
+  
+      tinymce.init({
+        selector: '#editor',
+        height: 200,
+        menubar:false,
+        statusbar: false,         
+        plugins: [
+          'autolink lists link'
+        ],
+        toolbar: 'bullist',
+        setup : function(ed){
+          ed.on('init', function() {
+            this.getDoc().body.style.fontSize = '14px';
+          });
+         ed.on('change', function(e) {
+           //parseHashtags(ed)
+         });        
+        }          
+      }); 
+    });    
+    
+    function filter() {
+      var current_text = $('#filter_box').val()
+      var tinyDom = tinyMCE.activeEditor.dom.getRoot();
+      $(tinyDom).find('li').hide()
+      $(tinyDom).find('li').each(function() {
+        var li_text = $(this).clone().children('ul').remove().end().html();
+        console.log(li_text)
+        if (li_text.indexOf(current_text) != -1) {
+          $(this).show()
+          $(this).parents().show()
+          $(this).find('li').show()
+        } 
+      })  
+    }
+    
+    function filterClear(){
+      $('#filter_box').val("")
+      filter()
+    }
+    
+    function filter_link(hashtag) {
+      $('#filter_box').val('#'+hashtag)  
+      $('#filter_box').trigger("input")
+      
+    }
+    
+    function parseHashtags(ed) {
+      var tinyDom = tinyMCE.activeEditor.dom.getRoot();
+      var initText = $(tinyDom).html()
+      parsedText = initText.replace( /#(\w+)\b(?!<\/a>)/g ,'<a class="hashLink" onclick="parent.filter_link(\'$1\')" href="#">#$1</a>')
+      $(tinyDom).html(parsedText)
+      extractHashtags()
+    }
+
+    function extractHashtags() {
+      var tinyDom = tinyMCE.activeEditor.dom.getRoot();
+      $(tinyDom).find('.hashLink').each(function(){
+        var newClick = $(this).attr("onclick").replace('parent.','');
+        console.log(newClick)
+        $(this).attr("onclick",newClick)
+        $('.allTags').append($(this).clone())  
+      })
+    } 
+    
+    
+   
+  </script>
+</html>
