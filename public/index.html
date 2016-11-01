@@ -7,12 +7,11 @@
   </head>
 
   <body>
-     Filter bullets points dinamically    <br>
+     Filter<br>
     <input id="filter_box" type=text oninput="filter()"/>
     <br><br>
     <div class="allTags">
       <a class="hashLink" onclick="filterClear()" href="#">Clear</a>
-      
     </div>
     <textarea id="editor"> 
       <ul style="list-style-type: circle;"> 
@@ -34,13 +33,11 @@
 
   <script>
     $( document ).ready(function() {
-
-  
       tinymce.init({
         selector: '#editor',
         height: 200,
         menubar:false,
-        statusbar: false,         
+        statusbar: false,
         plugins: [
           'autolink lists link'
         ],
@@ -51,8 +48,8 @@
           });
          ed.on('change', function(e) {
            //parseHashtags(ed)
-         });        
-        }          
+         });
+        }
       }); 
     });    
     
@@ -78,8 +75,7 @@
     
     function filter_link(hashtag) {
       $('#filter_box').val('#'+hashtag)  
-      $('#filter_box').trigger("input")
-      
+      $('#filter_box').trigger("input")  
     }
     
     function parseHashtags(ed) {
@@ -99,8 +95,6 @@
         $('.allTags').append($(this).clone())  
       })
     } 
-    
-    
-   
+
   </script>
 </html>

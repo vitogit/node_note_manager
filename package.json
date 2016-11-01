@@ -4,7 +4,8 @@
   "description": "Note manager",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js -e js,html"    
   },
   "dependencies": {
     "express": "^4.14.0",
