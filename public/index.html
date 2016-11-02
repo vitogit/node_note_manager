@@ -13,24 +13,9 @@
     <div class="allTags">
       <a class="hashLink" onclick="filterClear()" href="#">Clear</a>
     </div>
-    <textarea id="editor"> 
-      <ul style="list-style-type: circle;"> 
-        <li>hello 
-          <ul> 
-            <li>how 
-              <ul> 
-                <li>are</li> 
-              </ul> 
-            </li> 
-            <li>you</li> 
-          </ul> 
-        </li> 
-        <li>my #friend</li> 
-      </ul>
-    </textarea>
-    <button onclick="parseHashtags()">Parse</button>
-    <button onclick="saveNotes()">save</button>
-    <button onclick="loadNotes()">load</button>
+    <textarea id="editor"></textarea>
+    <!-- <button onclick="parseHashtags()">Parse</button>
+    <button onclick="loadNotes()">load</button> -->
   </body>
 
   <script>
@@ -41,9 +26,11 @@
         menubar:false,
         statusbar: false,
         plugins: [
-          'autolink lists link'
+          'autolink lists link save'
         ],
-        toolbar: 'bullist',
+        save_enablewhendirty: true,
+        save_onsavecallback: function () { parseHashtags(); saveNotes();  },
+        toolbar: 'bullist save',
         setup : function(ed){
           ed.on('init', function() {
             this.getDoc().body.style.fontSize = '14px';
@@ -52,7 +39,10 @@
            //parseHashtags(ed)
          });
         }
-      }); 
+      });
+      
+      //load the saved notes
+      loadNotes(); 
     });    
     
     function filter() {
@@ -104,7 +94,7 @@
         if(data==='ok') {
           console.log("saved success");
         }
-      });      
+      });
     }
 
     function loadNotes() {
@@ -114,7 +104,7 @@
           $(tinyDom).html(data)
           console.log("load success");
         }
-      });      
+      });
     }
   </script>
 </html>

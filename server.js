@@ -19,14 +19,13 @@ app.get('/loadNotes',function(req,res){
 
 app.listen(process.env.PORT || 5000);
 
-
 function saveToFile(filename, content) {
   fs.writeFile(filename, content, function(err) {
-      if(err) {
-        return console.log(err);
-        throw err;
-      }
-      console.log("The file was saved!");
+    if(err) {
+      return console.log(err);
+      throw err;
+    }
+    console.log("The file was saved!");
   });   
 }
 
