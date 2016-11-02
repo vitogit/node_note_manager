@@ -59,11 +59,29 @@ function parseHashtags(ed) {
 
 function extractHashtags() {
   var tinyDom = tinyMCE.activeEditor.dom.getRoot();
+  $('#allTags').html("")
+  var tagMap = {}
+  
   $(tinyDom).find('.hashLink').each(function(){
-    var newClick = $(this).attr("onclick").replace('parent.','');
-    $(this).attr("onclick",newClick)
-    $('.allTags').append($(this).clone())  
+    var linkText = $(this).text()
+    if (tagMap[linkText]) {
+      tagMap[linkText] = tagMap[linkText]+1
+    } else {
+      tagMap[linkText] = 1
+    }
   })
+
+  $.each(tagMap, function( index, value ) {
+    console.log( index + ": " + value );
+    var newLink = $("<a />", {
+        onclick : "filter_link('"+index.replace('#','')+"')",
+        href : "#",
+        text : index+"("+value+")"
+    });
+
+    $('#allTags').append(newLink).append('<br/>')
+  });
+
 } 
 
 function saveNotes() {
@@ -84,4 +102,11 @@ function loadNotes() {
       console.log("load success");
     }
   });
+  
+    
+  $('.bookmark_link').click(function(){
+    var hashtag = $(this).text()
+    $('#filter_box').val(hashtag)  
+    $('#filter_box').trigger("input")  
+  })
 }
