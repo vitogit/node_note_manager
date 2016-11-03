@@ -4,6 +4,7 @@ var fs = require('fs');
 
 app.use(express.static(__dirname + '/public'));
 
+//todo probably this needs to be a post
 app.get('/saveNotes',function(req,res){
   var notes = req.query.notes
   saveToFile('savedNotes/notes.html',notes)
@@ -19,6 +20,7 @@ app.get('/loadNotes',function(req,res){
 
 app.listen(process.env.PORT || 5000);
 
+//PRIVATE 
 function saveToFile(filename, content) {
   fs.writeFile(filename, content, function(err) {
     if(err) {
@@ -32,3 +34,5 @@ function saveToFile(filename, content) {
 function loadFromFile(filename) {
   return fs.readFileSync(filename, 'utf8');
 }
+
+module.exports = app
