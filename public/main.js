@@ -13,16 +13,11 @@ $( document ).ready(function() {
     setup : function(ed){
       ed.on('init', function() {
         this.getDoc().body.style.fontSize = '14px';
+        loadNotes();
       });
-     ed.on('change', function(e) {
-       //parseHashtags(ed)
-     });
     }
   });
-  
-  //load the saved notes
-  loadNotes(); 
-});    
+});
 
 function filter() {
   var current_text = $('#filter_box').val()
@@ -30,7 +25,6 @@ function filter() {
   $(tinyDom).find('li').hide()
   $(tinyDom).find('li').each(function() {
     var li_text = $(this).clone().children('ul').remove().end().html();
-    console.log(li_text)
     if (li_text.indexOf(current_text) != -1) {
       $(this).show()
       $(this).parents().show()
@@ -61,7 +55,6 @@ function extractHashtags() {
   var tinyDom = tinyMCE.activeEditor.dom.getRoot();
   $('#allTags').html("")
   var tagMap = {}
-  
   $(tinyDom).find('.hashLink').each(function(){
     var linkText = $(this).text()
     if (tagMap[linkText]) {
@@ -98,12 +91,16 @@ function loadNotes() {
   var tinyDom = tinyMCE.activeEditor.dom.getRoot();
   $.get('/loadNotes', function(data){
     if(data) {
-      $(tinyDom).html(data)
+      $(tinyDom).html(data);
       console.log("load success");
     }
   });
   
-    
+  
+  $.when( $.get( "/loadNotes" ) ).done(function( data ) {
+    extractHashtags();
+  });
+
   $('.bookmark_link').click(function(){
     var hashtag = $(this).text()
     $('#filter_box').val(hashtag)  
