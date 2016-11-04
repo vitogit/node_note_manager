@@ -10,8 +10,7 @@ var $ = require('jquery')(window);
 describe('App', function() {
   
   beforeEach(function() {
-    app = new App();
-    global.tinymce = {activeEditor: {dom: {getRoot: function (){return '' } }}}
+    global.tinymce = {activeEditor: {dom: {getRoot: function (){return '<body id="tinymce" class="mce-content-body " data-id="editor" contenteditable="true" spellcheck="false" style="font-size: 14px;"></body>' } }}}
     global.$ = $
   });
     
