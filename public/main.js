@@ -21,7 +21,7 @@ $( document ).ready(function() {
 
 function filter() {
   var current_text = $('#filter_box').val()
-  var tinyDom = tinyMCE.activeEditor.dom.getRoot();
+  var tinyDom = tinymce.activeEditor.dom.getRoot();
   $(tinyDom).find('li').hide()
   $(tinyDom).find('li').each(function() {
     var li_text = $(this).clone().children('ul').remove().end().html();
@@ -43,8 +43,8 @@ function filter_link(hashtag) {
   $('#filter_box').trigger("input")  
 }
 
-function parseHashtags(ed) {
-  var tinyDom = tinyMCE.activeEditor.dom.getRoot();
+function parseHashtags() {
+  var tinyDom = tinymce.activeEditor.dom.getRoot();
   var initText = $(tinyDom).html()
   parsedText = initText.replace( /#(\w+)\b(?!<\/a>)/g ,'<a class="hashLink" onclick="parent.filter_link(\'$1\')" href="#">#$1</a>')
   $(tinyDom).html(parsedText)
@@ -52,7 +52,7 @@ function parseHashtags(ed) {
 }
 
 function extractHashtags() {
-  var tinyDom = tinyMCE.activeEditor.dom.getRoot();
+  var tinyDom = tinymce.activeEditor.dom.getRoot();
   $('#allTags').html("")
   var tagMap = {}
   $(tinyDom).find('.hashLink').each(function(){
@@ -78,7 +78,7 @@ function extractHashtags() {
 } 
 
 function saveNotes() {
-  var tinyDom = tinyMCE.activeEditor.dom.getRoot();
+  var tinyDom = tinymce.activeEditor.dom.getRoot();
   var notes = $(tinyDom).html()
   $.get('/saveNotes',{notes:notes}, function(data){
     if(data==='ok') {
@@ -88,7 +88,7 @@ function saveNotes() {
 }
 
 function loadNotes() {
-  var tinyDom = tinyMCE.activeEditor.dom.getRoot();
+  var tinyDom = tinymce.activeEditor.dom.getRoot();
   $.get('/loadNotes', function(data){
     if(data) {
       $(tinyDom).html(data);
