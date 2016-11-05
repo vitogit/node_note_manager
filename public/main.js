@@ -33,10 +33,13 @@ var App = function() {
 
   this.filter = function() {
     var current_text = $('#filter_box').val()
+    var hashtags = current_text.replace(/  +/g, ' ').split(' ')
+    hashtags = hashtags.filter(function(h){ return h != "" }); 
     $(this.tinyDom).find('li').hide()
     $(this.tinyDom).find('li').each(function() {
       var li_text = $(this).clone().children('ul').remove().end().html();
-      if (li_text.indexOf(current_text) != -1) {
+      //filter using OR
+      if (new RegExp(hashtags.join("|")).test(li_text)) {
         $(this).show()
         $(this).parents().show()
         $(this).find('li').show()
