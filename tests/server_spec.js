@@ -43,18 +43,33 @@ describe('Server', function() {
     server.saveBackup('notes.html', 'hello', function(){
       var files = server.getNotesFiles()
       expect(files.length).to.eq(2);   
-      expect(files[0].name).to.eq('notes.html');    
-      expect(files[1].name).to.eq('notes.html.backup.1');      
+      expect(files[0].name).to.eq('notes.html');
       done();
     })
   });   
 
+  it('save until max backups', function(done) {
+    server.maxBackups = 1;
+    var oldFiles = server.getNotesFiles()
+    
+    server.saveBackup('notes.html', 'hello', function(){
+      var files = server.getNotesFiles()
+      expect(files.length).to.eq(2);   
+      expect(files[0].name).to.eq('notes.html');    
+      expect(files[1].name).to.not.eq(oldFiles[1].name);   
+      console.log('oldname____'+oldFiles[1].name) 
+      console.log('onewname____'+files[1].name) 
+      done();
+    })
+  }); 
+  
   it('clean all notes files', function() {
     server.cleanNoteFiles()
     var files = server.getNotesFiles()
     
     expect(files.length).to.eq(0);
-  });     
+  });
+  
   // it('save until 10 backups', function(done) {
   //   for (var i=0 ; i< 12 ; i++) {
   //     chai.request(server)

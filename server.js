@@ -7,13 +7,17 @@ app.use(express.static(__dirname + '/public'));
 //todo probably this needs to be a post
 app.get('/saveNotes',function(req,res){
   var notes = req.query.notes
-  saveToFile(notesFolder+'notes.html',notes, function(){})
+  saveToFile(notesFolder+'notes.html',notes, function(){
+    saveBackup(notesFolder+'notes.html',notes, function(){})
+  })
   //todo send error
   res.end("ok");
 });
 
 app.get('/loadNotes',function(req,res){
-  var data = loadFromFile(notesFolder+'notes.html')
+  var filename = req.query.filename || 'notes.html'
+  console.log("filename________"+filename)
+  var data = loadFromFile(notesFolder+filename)
   //todo send error
   res.end(data);  
 });
@@ -27,7 +31,7 @@ app.get('/getNotesFiles',function(req,res){
 app.listen(process.env.PORT || 5000);
 
 var notesFolder = 'savedNotes/';
-
+var maxBackups = 10;
 //PRIVATE 
 function saveToFile(filename, content, done) {
   fs.writeFile(filename, content, function(err) {
@@ -35,18 +39,22 @@ function saveToFile(filename, content, done) {
       return console.log(err);
       throw err;
     }
-    done();
     console.log("The file was saved!");
+    done();
   });   
 }
 
 function saveBackup(filename, content, done) {
-  console.log(done)
   var files = getNotesFiles()
   var backupCount = files.length -1;
-  var number = backupCount+1;
-  var newFilename = notesFolder+filename+'.backup.'+number
-  saveToFile(newFilename, content, done)
+  var newFilename = filename+'.backup.'+Date.now()
+  
+  if (backupCount>=maxBackups){
+    var olderFile = files[1].name
+    fs.unlinkSync(notesFolder+olderFile);
+  }
+  saveToFile(newFilename, content, done)    
+
 }
 
 function loadFromFile(filename) {
@@ -74,4 +82,4 @@ function cleanNoteFiles() {
 }
 
 
-module.exports = {app, getNotesFiles, saveToFile, loadFromFile,saveBackup,cleanNoteFiles}
+module.exports = {app, getNotesFiles, saveToFile, loadFromFile,saveBackup,cleanNoteFiles,maxBackups}

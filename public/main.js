@@ -1,23 +1,4 @@
-$( document ).ready(function() {
-  tinymce.init({
-    selector: '#editor',
-    height: '600px',
-    statusbar: false,
-    menubar:false,
-    plugins: [
-      'autolink lists link save'
-    ],
-    save_enablewhendirty: true,
-    save_onsavecallback: function () { parseHashtags(); saveNotes();  },
-    toolbar: 'bullist save',
-    setup : function(ed){
-      ed.on('init', function() {
-        this.getDoc().body.style.fontSize = '14px';
-        loadNotes();
-      });
-    }
-  });
-});
+
 
 function filter() {
   var current_text = $('#filter_box').val()
@@ -32,6 +13,11 @@ function filter() {
     } 
   })  
 }
+
+  
+function file_link(filename) {
+  loadNotes(filename);
+} 
 
 function filterClear(){
   $('#filter_box').val("")
@@ -65,7 +51,6 @@ function extractHashtags() {
   })
 
   $.each(tagMap, function( index, value ) {
-    console.log( index + ": " + value );
     var newLink = $("<a />", {
         onclick : "filter_link('"+index.replace('#','')+"')",
         href : "#",
@@ -87,18 +72,42 @@ function saveNotes() {
   });
 }
 
-function loadNotes() {
+function loadNotes(filename) {
   var tinyDom = tinyMCE.activeEditor.dom.getRoot();
-  $.get('/loadNotes', function(data){
+  var filename = filename || 'notes.html'
+  $.get('/loadNotes',{filename:filename},  function(data){
     if(data) {
       $(tinyDom).html(data);
       console.log("load success");
     }
   });
+}
   
-  
-  $.when( $.get( "/loadNotes" ) ).done(function( data ) {
-    extractHashtags();
+function getNotesFiles() {
+  $('#fileFinder ol').html("");
+  $.get('/getNotesFiles', function(data){
+    if(data) {
+      var files = JSON.parse(data)
+      files.forEach(file => {
+        var li = $('<li/>')
+        var newLink = $("<a />", {
+            onclick : "file_link('"+file.name+"')",
+            href : "#",
+            text : formatDate(file.modifiedDate)
+        }).appendTo(li);
+        $('#fileFinder ol').append(li)
+      })      
+    }
+  });
+}  
+
+
+  $( document ).ajaxSuccess(function( event, request, settings ) {
+    if ( settings.url.startsWith("/loadNotes") ) {
+      extractHashtags();
+    } else if (settings.url.startsWith("/saveNotes") ) { 
+      getNotesFiles();
+    }
   });
 
   $('.bookmark_link').click(function(){
@@ -106,4 +115,29 @@ function loadNotes() {
     $('#filter_box').val(hashtag)  
     $('#filter_box').trigger("input")  
   })
-}
+
+  function formatDate(date) {
+    return date.split('.')[0].replace('T', ' ').replace(/-/g,'/')
+  }
+
+$( document ).ready(function() {
+  tinymce.init({
+    selector: '#editor',
+    height: '600px',
+    statusbar: false,
+    menubar:false,
+    plugins: [
+      'autolink lists link save'
+    ],
+    save_enablewhendirty: true,
+    save_onsavecallback: function () { parseHashtags(); saveNotes();  },
+    toolbar: 'bullist save',
+    setup : function(ed){
+      ed.on('init', function() {
+        this.getDoc().body.style.fontSize = '14px';
+        loadNotes();
+        getNotesFiles();
+      });
+    }
+  });
+});
