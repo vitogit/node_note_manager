@@ -23,7 +23,7 @@
                 <h3 class="panel-title">Tags</h3>
               </div>
               <div class="panel-body">
-                <a class="hashLink" onclick="filterClear()" href="#">Clear</a><br/>
+                <a class="filter_clear"  href="#">Clear</a><br/>
 
                 <a class="bookmark_link" href="#">#read_later</a> <br/>
                 <a class="bookmark_link" href="#">#bookmark</a><br/>
@@ -54,7 +54,7 @@
         </div>
         <div id="main" class="col-sm-10 main">
           <div class="search_bar form-group">
-            <input id="filter_box" type="text" class="form-control" placeholder="filter by tag" oninput="filter()">
+            <input id="filter_box" type="text" class="form-control" placeholder="filter by tag" oninput="app.filter()">
           </div>
           <div id="main_notes">
             <textarea id="editor"></textarea>
