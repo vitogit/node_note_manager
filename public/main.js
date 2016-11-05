@@ -1,5 +1,3 @@
-
-
 function filter() {
   var current_text = $('#filter_box').val()
   var tinyDom = tinyMCE.activeEditor.dom.getRoot();
@@ -102,19 +100,15 @@ function getNotesFiles() {
 }  
 
 
-  $( document ).ajaxSuccess(function( event, request, settings ) {
-    if ( settings.url.startsWith("/loadNotes") ) {
-      extractHashtags();
-    } else if (settings.url.startsWith("/saveNotes") ) { 
-      getNotesFiles();
-    }
-  });
+$( document ).ajaxSuccess(function( event, request, settings ) {
+  if ( settings.url.startsWith("/loadNotes") ) {
+    extractHashtags();
+  } else if (settings.url.startsWith("/saveNotes") ) { 
+    getNotesFiles();
+  }
+});
 
-  $('.bookmark_link').click(function(){
-    var hashtag = $(this).text()
-    $('#filter_box').val(hashtag)  
-    $('#filter_box').trigger("input")  
-  })
+
 
   function formatDate(date) {
     return date.split('.')[0].replace('T', ' ').replace(/-/g,'/')
@@ -140,4 +134,11 @@ $( document ).ready(function() {
       });
     }
   });
+  
+  
+  $('.bookmark_link').click(function(){
+    var hashtag = $(this).text()
+    $('#filter_box').val(hashtag)  
+    $('#filter_box').trigger("input")  
+  })  
 });
