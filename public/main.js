@@ -49,9 +49,36 @@ var App = function() {
   
   this.parseHashtags = function() {
     var initText = $(this.tinyDom).html()
-    parsedText = initText.replace( /#(\w+)\b(?!<\/a>)/g ,'<a class="hash_link" data-name="$1" href="#">#$1</a>')
+    var parsedText = initText.replace( /#(\w+)\b(?!<\/a>)/g ,'<a class="hash_link" data-name="$1" href="#">#$1</a>')
+    parsedText = this.parseSmartTags(parsedText);
     $(this.tinyDom).html(parsedText);
     this.extractHashtags();
+    console.log('parsedhashtags')
+  }
+  
+  this.parseSmartTags = function(initText) {
+    return initText.replace(/\$(\w+)\b(?!<\/a>)/g, function (match, smartTag) {
+      var newLink = $("<a />", {
+          href : "#",
+          class : 'smartTag',
+          'data-name': smartTag,
+          text : '$'+smartTag
+      })
+      
+      if (smartTag == 'todo') {
+        newLink.addClass('todo bg-warning')
+          console.log('todo tag')
+      } else if (smartTag == 'completed') { 
+        newLink.addClass('completed bg-success')
+        console.log('journal tag')
+      } else if (smartTag == 'journal') { 
+        newLink.addClass('journal bg-info')
+        console.log('journal tag')        
+      } else {
+        
+      }
+      return newLink.prop('outerHTML');      
+    });
   }
 
   this.extractHashtags = function() {
@@ -81,6 +108,8 @@ var App = function() {
   this.saveNotes = function() {
     var notes = $(this.tinyDom).html()
     api.saveNotes(notes)
+    console.log('savednotes')
+    
   }    
 
   this.loadNotes = function(filename) {
@@ -106,12 +135,16 @@ var App = function() {
         $('#fileFinder ol').append(li)
       })      
     });
-
+  }
+  
+  this.applyStyles = function() {
+    console.log('applyStyles???')
+    $(this.tinyDom).find('a.smartTag').each(function() {      
+      var classes = $(this).prop('class')
+      $(this).parent().addClass(classes);
+    })    
   }
 };
-
-
-
 
 var Api = function() {
   this.saveNotes = function(notes) {
@@ -164,12 +197,13 @@ $( document ).ready(function() {
     height: '600px',
     statusbar: false,
     menubar:false,
+    content_css : 'simplex.bootstrap.min.css, style.css',    
     plugins: [
       'autolink lists link save'
     ],
     save_enablewhendirty: true,
-    save_onsavecallback: function () { app.parseHashtags(); app.saveNotes();  },
-    toolbar: 'bullist save',
+    save_onsavecallback: function () { app.parseHashtags(); app.applyStyles(); app.saveNotes(); },
+    toolbar: 'bullist save removeformat',
     setup : function(ed){
       ed.on('init', function() {
         this.getDoc().body.style.fontSize = '14px';
@@ -181,6 +215,7 @@ $( document ).ready(function() {
         app.loadNotes();
         app.getNotesFiles();    
       });
+
     }
   });
   
