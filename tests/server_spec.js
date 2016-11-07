@@ -42,19 +42,18 @@ describe('Server', function() {
       });
   });
   
-  it('update the notes GET', function(done) {
+  it('update the note GET', function(done) {
     chai.request(app)
       .get('/updateNote')
-      .query({id:1, name: 'notes2.html', text:'hello22'}) 
+      .query({id:1, name: 'notes1.html', text:'hello1'}) 
       .end(function(err, res){
         var savedNote = JSON.parse(res.text)
         expect(res).to.have.status(200);
-        expect(savedNote.text).to.eq('hello22');
-        expect(savedNote.name).to.eq('notes2.html');
+        expect(savedNote.text).to.eq('hello1');
+        expect(savedNote.name).to.eq('notes1.html');
         done();
       });
   });  
-  
 
   // 
   // it('get the notes files array', function() {

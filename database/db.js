@@ -49,7 +49,6 @@ exports.updateNote = function(data, cb) {
     if (err) return cb(err);
     cb(null, result.rows[0]);
   });
-  
 };
 
 exports.cleanTable = function(cb) {

@@ -17,6 +17,19 @@ app.get('/saveNote',function(req,res){
 app.get('/updateNote',function(req,res){
   var note = {id:req.query.id, name:req.query.name, text:req.query.text}
   db.updateNote(note, function(err, data) {
+    if (err) {
+      console.log("ERROR________")
+      console.log(err);
+      res.end(JSON.stringify(err));
+    } 
+    res.end(JSON.stringify(data));    
+  });
+});
+
+app.get('/upsertNote',function(req,res){
+  var note = {id:req.query.id, name:req.query.name, text:req.query.text}
+  db.upsertNote(note, function(err, data) {
+    console.log('data___'+JSON.stringify(data))
     if (err) return console.log(err);
     res.end(JSON.stringify(data));    
   });
