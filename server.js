@@ -1,25 +1,46 @@
 var express = require('express');
 var app = express();
 var fs = require('fs');
+var config = require('./config');
+var db = require('./database/db');
 
 app.use(express.static(__dirname + '/public'));
 
-//todo probably this needs to be a post
-app.get('/saveNotes',function(req,res){
-  var notes = req.query.notes
-  saveToFile(notesFolder+'notes.html',notes, function(){
-    saveBackup(notesFolder+'notes.html',notes, function(){})
-  })
-  //todo send error
-  res.end("ok");
+app.get('/saveNote',function(req,res){
+  var note = {name:req.query.name, text:req.query.text}
+  db.saveNote(note, function(err, data) {
+    if (err) return console.log(err);
+    res.end(JSON.stringify(data));
+  });
 });
 
-app.get('/loadNotes',function(req,res){
-  var filename = req.query.filename || 'notes.html'
-  console.log("filename________"+filename)
-  var data = loadFromFile(notesFolder+filename)
-  //todo send error
-  res.end(data);  
+app.get('/updateNote',function(req,res){
+  var note = {id:req.query.id, name:req.query.name, text:req.query.text}
+  db.updateNote(note, function(err, data) {
+    if (err) {
+      console.log("ERROR________")
+      console.log(err);
+      res.end(JSON.stringify(err));
+    } 
+    res.end(JSON.stringify(data));    
+  });
+});
+
+app.get('/upsertNote',function(req,res){
+  var note = {id:req.query.id, name:req.query.name, text:req.query.text}
+  db.upsertNote(note, function(err, data) {
+    console.log('data___'+JSON.stringify(data))
+    if (err) return console.log(err);
+    res.end(JSON.stringify(data));    
+  });
+});
+
+app.get('/loadNote',function(req, res){
+  var note = {id:req.query.id}
+  db.loadNote(note, function(err, data) {
+    if (err) return console.log(err);
+    res.end(JSON.stringify(data));
+  });
 });
 
 app.get('/getNotesFiles',function(req,res){
@@ -28,10 +49,11 @@ app.get('/getNotesFiles',function(req,res){
   res.end(JSON.stringify(data));  
 });
 
-app.listen(process.env.PORT || 5000);
+app.listen(config.PORT);
 
 var notesFolder = 'savedNotes/';
 var maxBackups = 10;
+
 //PRIVATE 
 function saveToFile(filename, content, done) {
   fs.writeFile(filename, content, function(err) {
