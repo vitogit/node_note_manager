@@ -9,8 +9,8 @@ var App = function() {
     })  
     
     $('#container').on('click', '.file_link', function(){
-      var filename = $(this).data('filename');
-      app.loadNotes(filename);
+      var note_id = $(this).data('note_id');
+      app.loadNote(note_id);
     })
 
     $('#container').on('click', '.filter_clear', function(){
@@ -105,37 +105,46 @@ var App = function() {
     });
   } 
 
-  this.saveNotes = function() {
-    var notes = $(this.tinyDom).html()
-    api.saveNotes(notes)
-    console.log('savednotes')
-    
-  }    
+  // this.saveNote = function() {
+  //   var note = {name: 'notes.html', text:$(this.tinyDom).html()}
+  //   api.saveNote(note)
+  //   console.log('savednotes')
+  // }    
 
-  this.loadNotes = function(filename) {
-    var filename = filename || 'notes.html'
+  this.updateNote = function() {
+    var note = {id:api.current_note_id, name: 'notes.html', text:$(this.tinyDom).html()}
+    api.updateNote(note, function(data) {
+      console.log('updated notes:'+JSON.stringify(data))
+    })    
+  }  
+  
+  this.loadNote = function(note) {
+    var note = note || {id:api.current_note_id}
     var self = this
-    api.loadNotes(filename, function(data) {
-      $(self.tinyDom).html(data);
+    
+    api.loadNote(note, function(data) {
+      console.log('loaded notes:'+JSON.stringify(data))
+      console.log("data.text________"+data.text)
+      $(self.tinyDom).html(data.text);
     })
   }
 
-  this.getNotesFiles = function() {
-    $('#fileFinder ol').html("");
-    api.getNotesFiles(function(files){
-      files.forEach(file => {
-        var li = $('<li/>')
-        var newLink = $("<a />", {
-            // onclick : "file_link('"+file.name+"')",
-            href : "#",
-            class: 'file_link',
-            'data-filename': file.name,
-            text : util.formatDate(file.modifiedDate)
-        }).appendTo(li);
-        $('#fileFinder ol').append(li)
-      })      
-    });
-  }
+  // this.getNotesFiles = function() {
+  //   $('#fileFinder ol').html("");
+  //   api.getNotesFiles(function(files){
+  //     files.forEach(file => {
+  //       var li = $('<li/>')
+  //       var newLink = $("<a />", {
+  //           // onclick : "file_link('"+file.name+"')",
+  //           href : "#",
+  //           class: 'file_link',
+  //           'data-note_id': file.id,
+  //           text : util.formatDate(file.modifiedDate)
+  //       }).appendTo(li);
+  //       $('#fileFinder ol').append(li)
+  //     })      
+  //   });
+  //}
   
   this.applyStyles = function() {
     console.log('applyStyles???')
@@ -147,39 +156,56 @@ var App = function() {
 };
 
 var Api = function() {
-  this.saveNotes = function(notes) {
-    $.get('/saveNotes',{notes:notes}, function(data){
-      if(data==='ok') {
-        console.log("saved success");
+  this.current_note_id = 1;
+  this.saveNote = function(note) {
+    var self = this;
+    $.get('/saveNote',{name:note.name, text:note.text}, function(data){
+      if(data) {
+        var note = JSON.parse(data)
+        console.log("saved success____"+note.id);
+        self.current_note_id = note.id
+        console.log("self.current_note_ids____"+self.current_note_id);
       }
     });
   }
 
-  this.loadNotes = function(filename, done) {
-    $.get('/loadNotes',{filename:filename},  function(data){
+  this.updateNote = function(note) {
+    var self = this;
+    $.get('/updateNote',{id:note.id, name:note.name, text:note.text}, function(data){
       if(data) {
-        done(data)
+        console.log("update success____"+JSON.stringify(data));
+      } else {
+        //note dont exist try to create it
+        self.saveNote(note);
+      }
+    });
+  }
+  
+  this.loadNote = function(note, done) {
+    $.get('/loadNote',{id:note.id},  function(data){
+      if(data) {
+        done(JSON.parse(data))
         console.log("load success");
       }
     });
   }
     
-  this.getNotesFiles = function(done) {
-    $.get('/getNotesFiles', function(data){
-      if(data) {
-        done(JSON.parse(data));
-        console.log("get notes success");
-      }
-    });
-  }
+  // this.getNotesFiles = function(done) {
+  //   $.get('/getNotesFiles', function(data){
+  //     if(data) {
+  //       done(JSON.parse(data));
+  //       console.log("get notes success");
+  //     }
+  //   });
+  // }
 }
 
 
 $( document ).ajaxSuccess(function( event, request, settings ) {
-  if ( settings.url.startsWith("/loadNotes") ) {
+  if ( settings.url.startsWith("/loadNote") ) {
     app.extractHashtags();
-  } else if (settings.url.startsWith("/saveNotes") ) { 
-    app.getNotesFiles();
+  } else if (settings.url.startsWith("/updateNote") ) { 
+    //app.getNotesFiles();
   }
 });
 
@@ -202,7 +228,7 @@ $( document ).ready(function() {
       'autolink lists link save'
     ],
     save_enablewhendirty: true,
-    save_onsavecallback: function () { app.parseHashtags(); app.applyStyles(); app.saveNotes(); },
+    save_onsavecallback: function () { app.parseHashtags(); app.applyStyles(); app.updateNote(); },
     toolbar: 'bullist save removeformat',
     setup : function(ed){
       ed.on('init', function() {
@@ -212,8 +238,8 @@ $( document ).ready(function() {
         api = new Api();        
         util = new Util();   
         app.init()     
-        app.loadNotes();
-        app.getNotesFiles();    
+        app.loadNote();
+        //app.getNotesFiles();    
       });
 
     }
