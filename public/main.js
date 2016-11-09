@@ -1,7 +1,9 @@
 var App = function() {
-  this.tinyDom = tinyMCE.activeEditor.dom.getRoot();
+  this.tinyDom;
   
   this.init = function() {
+    console.log('loading init app')
+
     $('.bookmark_link').click(function(){
       var hashtag = $(this).text()
       $('#filter_box').val(hashtag)  
@@ -29,8 +31,53 @@ var App = function() {
       $('#filter_box').val(hashtag)  
       $('#filter_box').trigger("input") 
     })
+
+    $('#container').on('click', '#auth_link', function(event){
+      console.log('trying to login')
+      gapi.auth.authorize(
+        {client_id: api.CLIENT_ID, scope: api.SCOPES, immediate: false},
+        app.handleAuthResult);
+      return false;
+    })
+    
+    if (api.authorized) {
+      $('#auth').html('logged')  
+    } else {
+      $('#auth').html('<a href="#" id="auth_link">Log in</a>');  
+    }
+
+    tinymce.init({
+      selector: '#editor',
+      height: '600px',
+      statusbar: false,
+      menubar:false,
+      content_css : 'simplex.bootstrap.min.css, style.css',    
+      plugins: [
+        'autolink lists link save'
+      ],
+      save_enablewhendirty: true,
+      save_onsavecallback: function () { /*app.parseHashtags(); app.applyStyles(); app.saveNotes();*/ },
+      toolbar: 'bullist save removeformat',
+      setup : function(ed){
+        ed.on('init', function() {
+          console.log('loading init tinymce')
+          this.getDoc().body.style.fontSize = '14px';
+          app.tinyDom = tinyMCE.activeEditor.dom.getRoot();
+          //app.loadNotes();
+          //app.listNotes();    
+        });
+      }
+    });            
   }
 
+  this.handleAuthResult = function(authResult) {
+    if (authResult && !authResult.error) {
+      $('#auth').html('logged') 
+    } else {
+      $('#auth').html('<a href="#" id="auth_link">Log in</a>');  
+    }
+  }
+  
   this.filter = function() {
     var current_text = $('#filter_box').val()
     var hashtags = current_text.replace(/  +/g, ' ').split(' ')
@@ -46,7 +93,7 @@ var App = function() {
       } 
     })
   }
-  
+
   this.parseHashtags = function() {
     var initText = $(this.tinyDom).html()
     var parsedText = initText.replace( /#(\w+)\b(?!<\/a>)/g ,'<a class="hash_link" data-name="$1" href="#">#$1</a>')
@@ -109,8 +156,7 @@ var App = function() {
     var notes = $(this.tinyDom).html()
     api.saveNotes(notes)
     console.log('savednotes')
-    
-  }    
+  }
 
   this.loadNotes = function(filename) {
     var filename = filename || 'notes.html'
@@ -120,9 +166,9 @@ var App = function() {
     })
   }
 
-  this.getNotesFiles = function() {
+  this.listNotes = function() {
     $('#fileFinder ol').html("");
-    api.getNotesFiles(function(files){
+    api.listNotes(function(files){
       files.forEach(file => {
         var li = $('<li/>')
         var newLink = $("<a />", {
@@ -147,39 +193,84 @@ var App = function() {
 };
 
 var Api = function() {
-  this.saveNotes = function(notes) {
-    $.get('/saveNotes',{notes:notes}, function(data){
-      if(data==='ok') {
-        console.log("saved success");
+  this.CLIENT_ID = '';
+  this.SCOPES = ['https://www.googleapis.com/auth/drive.metadata.readonly'];
+  this.authorized = false;
+  
+  this.init= function() {
+    var self = this;
+    $.get('/getClientId',function(response){
+      if(response) {
+        self.CLIENT_ID = response;
+        self.checkAuth();
       }
     });
   }
 
-  this.loadNotes = function(filename, done) {
-    $.get('/loadNotes',{filename:filename},  function(data){
-      if(data) {
-        done(data)
-        console.log("load success");
-      }
-    });
+  this.checkAuth = function(e) {
+    var self= this;
+    var useImmdiate = event ? false : true;
+    gapi.auth.authorize(
+      {
+        'client_id': self.CLIENT_ID,
+        'scope': self.SCOPES.join(' '),
+        'immediate': true
+      }, self.handleAuthResult);
   }
+
+  this.handleAuthResult = function(authResult) {
+    console.log('check auth handle')
     
-  this.getNotesFiles = function(done) {
-    $.get('/getNotesFiles', function(data){
-      if(data) {
-        done(JSON.parse(data));
-        console.log("get notes success");
-      }
-    });
+    console.log('handle auth')
+    if (authResult && !authResult.error) {
+      this.authorized = true;
+    } else {
+      this.authorized = false;
+    }
+  }
+
+  this.saveNotes = function(notes) {
+    // $.get('/saveNotes',{notes:notes}, function(data){
+    //   if(data==='ok') {
+    //     console.log("saved success");
+    //   }
+    // });
+  }
+
+  this.loadNotes = function(filename, done) {
+    // $.get('/loadNotes',{filename:filename},  function(data){
+    //   if(data) {
+    //     done(data)
+    //     console.log("load success");
+    //   }
+    // });
+  }
+  
+  this.listNotes = function() {
+    console.log('api listnotes')
+    gapi.client.load('drive', 'v3', this._listNotes);    
+  }  
+    
+  this._listNotes = function() {
+        console.log('api _listnotes')
+
+    var request = gapi.client.drive.files.list({
+        'pageSize': 10,
+        'fields': "nextPageToken, files(id, name)"
+      });
+    request.execute(function(resp) {
+      var files = resp.files;
+      console.log('files____'+JSON.stringify(files))
+    });      
   }
 }
 
 
 $( document ).ajaxSuccess(function( event, request, settings ) {
   if ( settings.url.startsWith("/loadNotes") ) {
-    app.extractHashtags();
+    //app.extractHashtags();
   } else if (settings.url.startsWith("/saveNotes") ) { 
-    app.getNotesFiles();
+    //app.getNotesFiles();
   }
 });
 
@@ -189,35 +280,3 @@ var Util = function() {
     return date.split('.')[0].replace('T', ' ').replace(/-/g,'/')
   }  
 }
-
-
-$( document ).ready(function() {
-  tinymce.init({
-    selector: '#editor',
-    height: '600px',
-    statusbar: false,
-    menubar:false,
-    content_css : 'simplex.bootstrap.min.css, style.css',    
-    plugins: [
-      'autolink lists link save'
-    ],
-    save_enablewhendirty: true,
-    save_onsavecallback: function () { app.parseHashtags(); app.applyStyles(); app.saveNotes(); },
-    toolbar: 'bullist save removeformat',
-    setup : function(ed){
-      ed.on('init', function() {
-        this.getDoc().body.style.fontSize = '14px';
-        //load the app, api , utils
-        app = new App();
-        api = new Api();        
-        util = new Util();   
-        app.init()     
-        app.loadNotes();
-        app.getNotesFiles();    
-      });
-
-    }
-  });
-  
-
-});

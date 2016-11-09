@@ -1,8 +1,13 @@
 var express = require('express');
 var app = express();
 var fs = require('fs');
+var config = require('./config');
 
 app.use(express.static(__dirname + '/public'));
+
+app.get("/getClientId", function(req, res) {
+  res.send(config.CLIENT_ID);
+});
 
 //todo probably this needs to be a post
 app.get('/saveNotes',function(req,res){
@@ -28,7 +33,7 @@ app.get('/getNotesFiles',function(req,res){
   res.end(JSON.stringify(data));  
 });
 
-app.listen(process.env.PORT || 5000);
+app.listen(config.PORT);
 
 var notesFolder = 'savedNotes/';
 var maxBackups = 10;

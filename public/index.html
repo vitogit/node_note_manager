@@ -13,7 +13,7 @@
 
     <div id="container" class="container">
       <div id="container-header">
-        <h1>Note Manager</h1>
+        <h1>Note Manager</h1> <span id="auth"></span>
       </div>
       <div class="row">
         <div id="menu" class="col-sm-2 menu">
@@ -70,6 +70,25 @@
         </div>        
       </div>
     </div>
+    
+    <script>
+
+
+      function init() {
+        console.log('init api')
+        api = new Api();
+        api.init();
+        util = new Util();  
+        app =new App();
+        app.init();
+        
+        setTimeout(function(){ app.listNotes() }, 1000);
+      
+        
+      }
+
+    </script>
+    <script src="https://apis.google.com/js/client.js?onload=init"> </script>
 
   </body>
 </html>
