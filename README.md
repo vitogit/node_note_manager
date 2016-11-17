@@ -1,7 +1,6 @@
 #Notes manager [STOPPED]
 
-##Info
-It uses tinymce as the text editor, Jquery to perform dom and event handling and Node.js as backend
+This works very well, it uses tinymce as the text editor, Jquery to perform dom and event handling and Node.js as backend. I stopped working on this but the code could be useful for anyone looking for node.js file persistence.
 
 ##Intro
 Add notes using the bullets points
